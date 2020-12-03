@@ -1,0 +1,25 @@
+{
+    "name":"jambonbill/stringburner",
+    "type": "library",
+    "description":"produce gcode strings to burn strings on things",
+    "license": "MIT",
+    "keywords": ["laser","string","text"],
+    "authors": [
+        {
+            "name": "Jambonbill",
+            "email": "jambonbill@gmail.com",
+            "homepage": "https://www.jambonbill.org",
+            "role":"developer"
+        }
+    ],
+
+    "autoload": {
+        "psr-0": {
+            "PSP": "src/"
+        }
+    },
+
+    "require": {
+    	"php": ">=7.0.0"
+    }
+}
