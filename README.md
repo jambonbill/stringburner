@@ -8,8 +8,13 @@ make a json file with the parameters and string to "burn"
 
 load and produce the gcode.
 
+```
+$gcode=new PSP\Gcode("../json/test.json");//load settings
+$gcode->toString();//generate gcode
+```
+
 You can use UGS or your favorite software to forward the GCODE to your laser cutter.
 
-#UGS
+# UGS
 
 https://winder.github.io/ugs_website/download/
