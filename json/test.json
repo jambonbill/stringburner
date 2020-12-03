@@ -1,0 +1,10 @@
+{
+	"title":"Test file",
+	"comment":"feed -> speed, spindle -> power",
+	"size":4,
+	"scale":0.5,
+	"spacing":0.1,
+	"feed":100,
+	"spindle":200,
+	"string":"THIS IS A TEST"
+}
