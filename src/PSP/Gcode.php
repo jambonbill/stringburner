@@ -8,7 +8,10 @@
 namespace PSP;
 
 use Exception;
-use PSP\Gsim;
+
+use PSP\Gconf;//config entity
+use PSP\Gfont;//vector font
+use PSP\Gsim; //simulator
 
 class Gcode
 {
@@ -16,439 +19,86 @@ class Gcode
     private $DEBUG=false;
 
     private $conf=null;
+    private $font=null;
 
-    public function __construct(string $path)
+    private $text='';//the text string we want to burn
+
+    public function __construct(string $configpath)
     {
-        $this->loadJson($path);
+        $this->conf=new Gconf($configpath);
+
     }
 
+
+    /**
+     * Return config entity
+     * @return [type] [description]
+     */
+    public function conf()
+    {
+        return $this->conf;
+    }
 
     /**
      * Load Parameters from JSON
      * @param  string $path [description]
      * @return [type]       [description]
      */
-    public function loadJson(string $path)
+
+    public function loadFont(string $path)
     {
         if (!is_file($path)) {
             throw new Exception("File not found", 1);
         }
 
-        $txt=file_get_contents($path);
-        $json=json_decode($txt);
-        $err=json_last_error();
-
-        if ($err) {
-            throw new Exception("JSON EROR:".json_last_error(), 1);
-        }
-
-        // Here we must make sure that `conf` hold all the necessary values
-
-        $this->conf=$json;
-
-        /*
-        if ($this->conf->string) {
-            $this->toString();
-        }
-        */
+        //$this->font->load($path);
+        $this->font=new Gfont($path);
         return $this;
     }
 
 
     /**
-     * Return GCODE string for a given Charcode
-     * @param  float  $x   [description]
-     * @param  float  $y   [description]
-     * @param  int    $chr [description]
-     * @return [type]      [description]
+     * [debug description]
+     * @return [type] [description]
      */
-    public function vectorCode(float $x,float $y, string $chr)
+    public function debug(bool $bool)
     {
-        //echo "vectorCode($chr)\n";
-        $sim=new Gsim($x, $y, $this->conf);
-        $sim->goto($x,$y);
-        $sim->comment("Letter ".$chr);
-
-        switch($chr){
-
-            case " ":
-                $sim->comment("[Space]");
-                break;
-
-
-            case "/":
-                $sim->burn()
-                    ->move(0.8,1);
-                    break;
-
-
-            case "\\":
-                $sim->move(0.8,0)->burn()
-                    ->move(-0.8,1);
-                    break;
-
-
-            case "+":
-                $sim->move(0.4,0)
-                    ->move(0,0.2)->burn()
-                    ->move(0,0.6)->stop()
-                    ->move(-0.4,-0.4)->burn()
-                    ->move(0.8,0);
-                    break;
-
-
-            case "-":
-                $sim->move(0,0.5)->burn()
-                    ->move(0.8,0);
-                    break;
-
-            case ".":
-                $sim->move(0.4,0)->burn()
-                    ->move(0.2,0)
-                    ->move(0,0.2)
-                    ->move(-0.2,0)
-                    ->move(0,-0.2);
-                    break;
-
-
-            case "=":
-                $sim->move(0,0.3)->burn()
-                    ->move(0.8,0)->stop()
-                    ->move(0,0.3)->burn()
-                    ->move(-0.8,0);
-                    break;
-
-
-            case "A":
-                $sim->burn()
-                    ->move(0.4,1)
-                    ->move(0.4,-1)->stop()
-                    ->move(-0.15,0.25)->burn()
-                    ->move(-0.6,0);
-                    break;
-
-            case "B":
-                $sim->burn()
-                    ->move(0.6,0)
-                    ->move(0.2,0.2)
-                    ->move(0,0.3)
-
-                    ->move(-0.7,0)
-                    ->move(0.7,0)
-
-                    ->move(0,0.3)
-                    ->move(-0.2,0.2)
-                    ->move(-0.6,0)->stop()
-                    ->move(0.2,0)->burn()
-                    ->move(0,-1);
-                    break;
-
-            case "C"://67
-                $sim->move(0.75,0)->burn()
-                    ->move(-0.75,0)
-                    ->move(0,1)
-                    ->move(0.75,0);
-                    break;
-
-
-            case "D":
-                $sim->burn()
-                    ->move(0.6,0)
-                    ->move(0.2,0.2)
-                    ->move(0,0.6)
-                    ->move(-0.2,0.2)
-                    ->move(-0.6,0)->stop()
-                    ->move(0.2,0)->burn()
-                    ->move(0,-1);
-                    break;
-
-            case "E"://69
-                $sim->move(0.8,1)->burn()
-                    ->move(-0.8,0)
-                    ->move(0,-1)
-                    ->move(0.8,0)->stop()
-                    ->move(-0.8,0.5)
-                    ->burn()->move(0.6,0);
-                    break;
-
-
-            case "F"://70
-                $sim->burn()
-                    ->move(0,0.5)
-                    ->move(0.5,0)
-                    ->move(-0.5,0)
-                    ->move(0,0.5)
-                    ->move(0.75,0);
-                    break;
-
-
-
-            case "G"://71
-                $sim->move(0.8,1)//start from top right
-                    ->burn()
-                    ->move(-0.8,0)
-                    ->move(0,-1)
-                    ->move(0.8,0)
-                    ->move(0,0.5)
-                    ->move(-0.4,0);
-                    break;
-
-            case "H"://72
-                $sim->burn()
-                    ->move(0,1)
-                    ->move(0,-0.5)
-                    ->move(0.75,0)
-                    ->move(0,0.5)
-                    ->move(0,-1);
-                    break;
-
-            case "I"://73
-                $sim->burn()
-                    ->move(0.75,0)
-                    ->move(-0.75/2,0)
-                    ->move(0,1)
-                    ->move(-0.75/2,0)
-                    ->move(0.75,0);
-                    break;
-
-
-
-            case "J"://74://J
-                $sim->burn()
-                    ->move(0.4,0.1)
-                    ->move(0,0.9)
-                    ->move(-0.4,0)
-                    ->move(0.8,0);
-                break;
-
-            case "K":
-                $sim->burn()
-                    ->move(0,1)->stop()
-                    ->move(0.8,0)->burn()
-                    ->move(-0.8,-0.5)
-                    ->move(0.8,-0.5);
-
-            case "L":
-                $sim->move(0.75,0)->burn()
-                    ->move(-0.75,0)
-                    ->move(0,1);
-                    break;
-
-            case "M"://78
-                $sim->burn()
-                    ->move(0,1)
-                    ->move(0.4,-0.5)
-                    ->move(0.4,0.5)
-                    ->move(0,-1);
-                    break;
-
-            case "N"://78
-                $sim->burn()
-                    ->move(0,1)
-                    ->move(0.75,-1)
-                    ->move(0,1);
-                    break;
-
-            case "O"://79
-                $sim->burn()
-                    ->move(0,1)
-                    ->move(0.75,0)
-                    ->move(0,-1)
-                    ->move(-0.75,0);
-                    break;
-
-            case "P"://80
-                $sim->burn()
-                    ->move(0,1)
-                    ->move(0.75,0)
-                    ->move(0,-0.5)
-                    ->move(-0.75,0);
-                    break;
-
-            case "Q":
-                $sim->burn()
-                ->move(0,1)
-                ->move(0.8,0)
-                ->move(0,-0.5)
-                ->move(-0.4,-0.5)
-                ->move(-0.4,0)->stop()//back to origin
-                ->move(0.4,0.5)->burn()
-                ->move(0.4,-0.5);
-                break;
-
-            case "R"://R
-                $sim->burn()
-                    ->move(0,1)
-                    ->move(0.75,0)
-                    ->move(0,-0.5)
-                    ->move(-0.75,0)
-                    ->move(0.75,-0.5);
-                    break;
-
-            case "S":
-                $sim->burn()
-                    ->move(0.75,0)
-                    ->move(0,0.5)
-                    ->move(-0.75,0)
-                    ->move(0,0.5)
-                    ->move(0.75,0);
-                    break;
-
-            case "T":
-                $sim->move(0.75/2,0)->burn()
-                    ->move(0,1)
-                    ->move(-0.75/2,0)
-                    ->move(0.75,0);
-                    break;
-
-            case "U":
-                $sim->move(0,1)->burn()
-                    ->move(0,-1)
-                    ->move(0.75,0)
-                    ->move(0,1);
-                    break;
-
-            case "V":
-                $sim->move(0,1)->burn()//move up first
-                    ->move(0.4,-1)
-                    ->move(0.4,1);
-                    break;
-
-            case "W":
-                $sim->move(0,1)->burn()//move up first
-                    ->move(0,-1)
-                    ->move(0.4,0.5)
-                    ->move(0.4,-0.5)
-                    ->move(0,1);
-                    break;
-
-
-            case "X":
-                $sim->burn()
-                    ->move(0.8,1)->stop()
-                    ->move(-0.8,0)->burn()
-                    ->move(0.8,-1);
-                    break;
-                break;
-
-            case "Y":
-                $sim->move(0.4,0)->burn()
-                    ->move(0,0.5)
-                    ->move(-0.4,0.5)->stop()
-                    ->move(0.4,-0.5)->burn()
-                    ->move(0.4,0.5);
-                break;
-
-            case "Z":
-                $sim->move(0.8,0)->burn()
-                    ->move(-0.8,0)
-                    ->move(0.8,1)
-                    ->move(-0.8,0);
-                break;
-
-            case "0":
-                $sim->burn()
-                    ->move(0.8,0)
-                    ->move(0,1)
-                    ->move(-0.8,0)
-                    ->move(0,-1)
-                    ->move(0.8,1);
-                    break;
-
-            case "1":
-                $sim->burn()->move(0.8,0)->stop()
-                    ->move(-0.4,0)->burn()
-                    ->move(0,1)
-                    ->move(-0.4,-0.25);
-                    break;
-
-            case "2":
-                $sim->move(0.8,0)->burn()
-                    ->move(-0.8,0)
-                    ->move(0.8,0.5)
-                    ->move(0,0.5)
-                    ->move(-0.8,0)
-                    ->move(0,-0.1);
-                    break;
-
-            case "3":
-                $sim->burn()
-                    ->move(0.8,0)
-                    ->move(0,1)
-                    ->move(-0.8,0)->stop()
-                    ->move(0,-0.5)->burn()
-                    ->move(0.8,0);
-                    break;
-
-            case "4":
-                $sim->move(0.8,0)->burn()
-                    ->move(0,1)->stop()
-                    ->move(-0.8,0)->burn()
-                    ->move(0,-0.5)
-                    ->move(0.8,0);
-                    break;
-
-            case "5":
-                $sim->burn()
-                    ->move(0.8,0)
-                    ->move(0,0.5)
-                    ->move(-0.8,0)
-                    ->move(0,0.5)
-                    ->move(0.8,0);
-                    break;
-
-            case "6":
-                $sim->move(0,0.5)->burn()
-                    ->move(0.8,0)
-                    ->move(0,-0.5)
-                    ->move(-0.8,0)
-                    ->move(0,1)
-                    ->move(0.8,0);
-                    break;
-
-            case "7":
-                $sim->burn()
-                    ->move(0.8,1)
-                    ->move(-0.8,0)->stop()
-                    ->move(0,-0.5)->burn()
-                    ->move(0.8,0);
-                    break;
-
-            case "8":
-                $sim->burn()
-                    ->move(0.8,0)
-                    ->move(0,1)
-                    ->move(-0.8,0)
-                    ->move(0,-1)->stop()
-                    ->move(0,0.5)->burn()
-                    ->move(0.8,0);
-                    break;
-
-            case "9":
-                $sim->burn()
-                    ->move(0.8,0)
-                    ->move(0,1)
-                    ->move(-0.8,0)
-                    ->move(0,-0.5)
-                    ->move(0.8,0);
-                    break;
-
-
-            default:
-                echo "Error: Chr $chr not defined\n";
-        }
-
-        $sim->stop();
-
-        return $sim->gcode();
+        $this->DEBUG=$bool;
     }
 
 
+    /**
+     * Return Gfont
+     * @return [type] [description]
+     */
+    public function font()
+    {
+        return $this->font;
+    }
+
+
+    /**
+     * Set Text
+     * @return [type] [description]
+     */
+    public function text(string $str)
+    {
+        $this->text=$str;
+    }
+
+
+
+
+
+    /**
+     * The gcode header
+     * @return [type] [description]
+     */
     public function header()
     {
         $str ='%'."\n";
-        $str =';made with jambonbill/stringburner'."\n";
-        $str =';git...'."\n";
+        $str.=';made with jambonbill/stringburner'."\n";
+        $str.=';https://github.com/jambonbill/stringburner'."\n";
 
         $str.='G90'."\n";//; DONT_PANIC2
 
@@ -463,7 +113,7 @@ class Gcode
         $str.='G90 ; Absolute positioning'."\n";
             //; CUT SKETCH
 
-        $str.='; SCALE is '.$this->conf->scale."\n";
+        $str.='; SCALE is '.$this->conf->scale()."\n";
 
         //;Tx - prepare to change to tool x.
         $str.='T1'."\n";
@@ -472,6 +122,7 @@ class Gcode
         $str.='M3'."\n";
         return $str;
     }
+
 
     /**
      * End of Gcode string
@@ -490,34 +141,58 @@ class Gcode
         return $str;
     }
 
-    public function toString(): string
-    {
 
+    /**
+     * Generate Gcode string
+     * @return [type] [description]
+     */
+    public function make(): string
+    {
         $str=$this->header();
 
-        $conf=$this->conf;
+        $rows=explode("\n", $this->text);
 
-        //make gcode for each letters
-        for($i=0; $i<strlen($this->conf->string); $i++){
-            $x=$i;
-            $y=0;
-            $px=($x*$conf->size)+($x*$conf->spacing)*$conf->scale;
-            $py=($y*$conf->size)+($y*$conf->spacing)*$conf->scale;
+        foreach($rows as $line=>$row)
+        {
+            for ($i=0; $i<strlen($row); $i++) {
 
-            $str.=$this->vectorCode($px,$py, $conf->string[$i]);
+                $chr=$row[$i];
+
+                $y=-$line;
+
+                $px=($i*$this->conf->size())+($i*$this->conf->spacing())*$this->conf->scale();
+                $py=($y*$this->conf->size())+($y*$this->conf->spacing())*$this->conf->scale();
+
+                $sim=new Gsim($this->conf);
+                $sim->goto($px, $py);
+                $sim->comment("Letter #$chr");
+                $sim->run($this->font()->char($chr));
+                //$conf->string[$i]
+                //$str.=$this->vectorCode($px,$py, $conf->string[$i]);
+                $str.=$sim->gcode();
+            }
         }
+
+
+
 
         $str.=$this->footer();
         return $str;
     }
 
+
+    /**
+     * Generate gcode and save to file
+     * @param  string $path [description]
+     * @return [type]       [description]
+     */
     public function toFile(string $path)
     {
-        if(!$path){
+        if (!$path) {
             throw new Exception("Error Processing Request", 1);
         }
 
-        $gcode=$this->toString();
+        $gcode=$this->make();
 
         $f=fopen($path,"w+");
         fwrite($f, $gcode);
