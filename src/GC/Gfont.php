@@ -12,16 +12,45 @@ use GC\Gsim;
 
 
 /**
- * Manage vector font (monospace)
+ * Manage vector font
  */
 class Gfont
 {
 
-    private $conf=null;//
+    /**
+     * The config object
+     * @var null
+     */
+    private $conf=null;
 
-    private $author='';//Font author
-    private $name='';//Font name
-    private $chars=[];//Font data
+    /**
+     * Font name
+     * @var string
+     */
+    private $name='';
+
+
+    /**
+     * Font author
+     * @var string
+     */
+    private $author='';
+
+
+    /**
+     * Font data
+     * @var array
+     */
+    private $chars=[];
+
+
+    /**
+     * Font width
+     * (compress/expend)
+     * @var integer
+     */
+    private $width=1;//1=>100% width
+
 
     public function __construct(string $path)
     {
@@ -112,7 +141,7 @@ class Gfont
 
 
     /**
-     * Sequence data for a given char
+     * Sequence data for a given char(code)
      * @param  [type] $n [description]
      * @return [type]    [description]
      */
@@ -123,7 +152,14 @@ class Gfont
         }
 
         if (isset($this->chars[$n])) {
-            return $this->chars[$n];
+            //transform here
+            $char=$this->chars[$n];
+            foreach($char as $k=>$v){
+                $char[$k][1]*=$this->width;//apply width (squeeze/compress/expend)
+                //$char[$k][2]*=0.5;//height
+            }
+            //print_r($char);exit;
+            return $char;
         }else{
             echo "Warning: Font Char #$n not found;\n";
         }
@@ -147,22 +183,6 @@ class Gfont
     }
 
 
-    /**
-     * Return Gcode for the given char at given x/y position
-     * (was)function vectorCode
-     * @param  [type] $x   [description]
-     * @param  [type] $y   [description]
-     * @param  string $chr [description]
-     * @return [type]      [description]
-     */
-    /*
-    public function gcode(float $x, float $y, string $chr)
-    {
-        $sim=new Gsim($this->conf);
-        $sim->goto($x,$y);
-        $sim->comment("Letter ".$chr);
-    }
-    */
 
     /**
      * return Font as Json

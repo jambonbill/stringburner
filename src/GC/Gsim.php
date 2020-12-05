@@ -17,11 +17,34 @@ use GC\Gconf;
 class Gsim
 {
 
+    /**
+     * Config object
+     * @var null
+     */
+    private $conf=null;
+
+
+    /**
+     * Current x pos
+     * @var integer
+     */
     private $x=0;//mm
+
+
+    /**
+     * Current Y pos
+     * @var integer
+     */
     private $y=0;//global scaling
+
+
+    /**
+     * List of steps
+     * @var array
+     */
     private $list=[];
 
-    private $conf=null;
+
 
     public function __construct(Gconf $conf)
     {
@@ -122,6 +145,7 @@ class Gsim
         return $this;
     }
 
+
     /**
      * perform a sequence of actions
      * @return [type] [description]
@@ -150,13 +174,13 @@ class Gsim
         return $this;
     }
 
+
     /**
-     * Return gcode
+     * Return gcode string
      * @return [type] [description]
      */
     public function gcode()
     {
-        //return the gcode string
         $this->list[]='';//empty line
         return implode("\n", $this->list);
     }

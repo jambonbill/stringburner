@@ -15,19 +15,47 @@ use Exception;
 class Gconf
 {
 
-    private $conf=null;//
 
-    private $size=8;//font size
-    private $scale=1;//global scale
-    private $spacing=1;//character spacing
-    private $feed=100;//Speed
-    private $spindle=50;//Power
+    /**
+     * Font size
+     * @var integer
+     */
+    private $size=8;
+
+
+    /**
+     * Global Scale
+     * @var integer
+     */
+    private $scale=1;
+
+
+    /**
+     * Character spacing
+     * @var integer
+     */
+    private $spacing=1;
+
+
+    /**
+     * Work speed
+     * @var integer
+     */
+    private $feed=100;
+
+
+    /**
+     * Burn Power
+     * @var integer
+     */
+    private $spindle=50;
 
 
     public function __construct(string $path)
     {
         $this->load($path);
     }
+
 
     /**
      * Load config file
@@ -36,9 +64,8 @@ class Gconf
      */
     public function load(string $path)
     {
-        //Load a FONT
         if (!is_file($path)) {
-            throw new Exception("$path not found", 1);
+            throw new Exception("config $path not found", 1);
         }
 
         $txt=file_get_contents($path);
@@ -99,6 +126,10 @@ class Gconf
     }
 
 
+    /**
+     * [spindle description]
+     * @return [type] [description]
+     */
     public function spindle()
     {
         return $this->spindle;
@@ -115,5 +146,4 @@ class Gconf
         $dat['spindle']=$this->spindle;
         return json_encode($dat, JSON_PRETTY_PRINT);
     }
-
 }
