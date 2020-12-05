@@ -3,7 +3,7 @@
     "type": "library",
     "description":"produce gcode strings to burn strings on things",
     "license": "MIT",
-    "keywords": ["laser","string","text"],
+    "keywords": ["lasercut", "string", "text"],
     "authors": [
         {
             "name": "Jambonbill",
@@ -15,7 +15,7 @@
 
     "autoload": {
         "psr-0": {
-            "PSP": "src/"
+            "GC": "src/"
         }
     },
 
