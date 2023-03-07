@@ -199,4 +199,13 @@ class Gcode
         fclose($f);
     }
 
+    
+    /**
+     * Return Gcode string
+     * @return string
+     */
+    public function toString(){
+        return $this->make();
+    }
+
 }
